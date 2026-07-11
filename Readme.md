@@ -1,18 +1,20 @@
 Hello College — Feedback & Complaint Portal
 
 
-A role-based complaint and feedback management system for academic institutions.
+A complaint and feedback management system for academic institutions.
 
 
 This project was developed solely for academic purposes and is submitted as a minor project for the 6th semester of the IOE Computer Engineering.
 
-Frontend: React.js(vite)
-Backend: Node.js with Express.js framework
-Database: PostgreSQL 
-Authentication: JSON Web Tokens(JWT)
-Version Control: Git and GitHub
-Content Moderation: Profanity filter and keyword-based content moderation (under progress)
-AI Integration AI-powered complaint summarization using a Large Language Model (under progress)
+| **Component**      | **Technology / Tool**                                                              |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| Frontend           | React.js (Vite)                                                                    |
+| Backend            | Node.js with Express.js                                                            |
+| Database           | PostgreSQL                                                                         |
+| Authentication     | JSON Web Tokens (JWT)                                                              |
+| Version Control    | Git & GitHub                                                                       |
+| Content Moderation | Profanity Filter & Keyword-Based Content Moderation *(Under Progress)*             |
+| AI Integration     | AI-Powered Complaint Summarization using a Large Language Model *(Under Progress)* |
 
 
 Project Structure
@@ -21,12 +23,15 @@ hello-college/
 ├── backend/
 │   ├── .env.example
 │   ├── package.json
-│   ├── schema.sql              ← This query is run on PostgreSQL (using) to create a database.
+│   ├── schema.sql                # Run this script in PostgreSQL to create the database
 │   └── src/
 │       ├── server.js
-│       ├── config/db.js
-│       ├── middleware/auth.js
-│       ├── routes/index.js
+│       ├── config/
+│       │   └── db.js
+│       ├── middleware/
+│       │   └── auth.js
+│       ├── routes/
+│       │   └── index.js
 │       └── controllers/
 │           ├── authController.js
 │           ├── communityController.js
@@ -36,20 +41,27 @@ hello-college/
     ├── package.json
     └── src/
         ├── App.jsx
-        ├── index.jsx
+        ├── main.jsx
         ├── index.css
-        ├── utils/api.js
-        ├── context/AuthContext.jsx
-        ├── components/shared/
-        │   ├── Sidebar.jsx
-        │   └── UI.jsx
+        ├── utils/
+        │   └── api.js
+        ├── context/
+        │   └── AuthContext.jsx
+        ├── components/
+        │   └── shared/
+        │       ├── Sidebar.jsx
+        │       └── UI.jsx
         └── pages/
             ├── Login.jsx
             ├── Register.jsx
-            ├── shared/CommunityBoard.jsx
-            ├── student/StudentPages.jsx
-            ├── teacher/TeacherPages.jsx
-            └── admin/AdminPages.jsx
+            ├── shared/
+            │   └── CommunityBoard.jsx
+            ├── student/
+            │   └── StudentPages.jsx
+            ├── teacher/
+            │   └── TeacherPages.jsx
+            └── admin/
+                └── AdminPages.jsx
 
 
 
