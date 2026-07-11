@@ -19,11 +19,12 @@ This project was developed solely for academic purposes and is submitted as a mi
 
 Project Structure
 
+```text
 hello-college/
 ├── backend/
 │   ├── .env.example
 │   ├── package.json
-│   ├── schema.sql                # Run this script in PostgreSQL to create the database
+│   ├── schema.sql
 │   └── src/
 │       ├── server.js
 │       ├── config/
@@ -37,33 +38,32 @@ hello-college/
 │           ├── communityController.js
 │           ├── complaintController.js
 │           └── userController.js
-└── frontend/
-    ├── package.json
-    └── src/
-        ├── App.jsx
-        ├── main.jsx
-        ├── index.css
-        ├── utils/
-        │   └── api.js
-        ├── context/
-        │   └── AuthContext.jsx
-        ├── components/
-        │   └── shared/
-        │       ├── Sidebar.jsx
-        │       └── UI.jsx
-        └── pages/
-            ├── Login.jsx
-            ├── Register.jsx
-            ├── shared/
-            │   └── CommunityBoard.jsx
-            ├── student/
-            │   └── StudentPages.jsx
-            ├── teacher/
-            │   └── TeacherPages.jsx
-            └── admin/
-                └── AdminPages.jsx
-
-
+├── frontend/
+│   ├── package.json
+│   └── src/
+│       ├── App.jsx
+│       ├── main.jsx
+│       ├── index.css
+│       ├── utils/
+│       │   └── api.js
+│       ├── context/
+│       │   └── AuthContext.jsx
+│       ├── components/
+│       │   └── shared/
+│       │       ├── Sidebar.jsx
+│       │       └── UI.jsx
+│       └── pages/
+│           ├── Login.jsx
+│           ├── Register.jsx
+│           ├── shared/
+│           │   └── CommunityBoard.jsx
+│           ├── student/
+│           │   └── StudentPages.jsx
+│           ├── teacher/
+│           │   └── TeacherPages.jsx
+│           └── admin/
+│               └── AdminPages.jsx
+```
 
 Channels
 
