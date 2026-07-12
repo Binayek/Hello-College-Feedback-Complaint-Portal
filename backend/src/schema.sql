@@ -3,7 +3,7 @@
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- ── Enum types ─────────────────────────────────────────────
+--  Enum types 
 CREATE TYPE user_role        AS ENUM ('student', 'teacher', 'admin');
 CREATE TYPE complaint_status AS ENUM ('open', 'assigned', 'in_progress', 'resolved', 'closed');
 CREATE TYPE complaint_priority AS ENUM ('low', 'medium', 'high');
@@ -13,7 +13,7 @@ CREATE TYPE notif_type       AS ENUM (
   'community_comment', 'identity_revealed'
 );
 
--- ── Faculties (departments) ────────────────────────────────
+--  Faculties (departments) 
 CREATE TABLE faculties (
   id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name       VARCHAR(100) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE faculties (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- ── Users ──────────────────────────────────────────────────
+--  Users 
 CREATE TABLE users (
   id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name          VARCHAR(100) NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE users (
   updated_at    TIMESTAMP DEFAULT NOW()
 );
 
--- ── Community Board Posts ──────────────────────────────────
+--  Community Board Posts 
 CREATE TABLE community_posts (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   author_id    UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -47,7 +47,7 @@ CREATE TABLE community_posts (
   updated_at   TIMESTAMP DEFAULT NOW()
 );
 
--- ── Community Post Comments ────────────────────────────────
+--  Community Post Comments 
 CREATE TABLE post_comments (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   post_id      UUID REFERENCES community_posts(id) ON DELETE CASCADE,
@@ -58,7 +58,7 @@ CREATE TABLE post_comments (
   created_at   TIMESTAMP DEFAULT NOW()
 );
 
--- ── Complaints (Student → Admin) ───────────────────────────
+--  Complaints (Student → Admin) 
 CREATE TABLE complaints (
   id                       UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   title                    VARCHAR(200) NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE complaints (
   updated_at               TIMESTAMP DEFAULT NOW()
 );
 
--- ── Complaint Assignments ──────────────────────────────────
+--  Complaint Assignments 
 -- Admin assigns a complaint to a teacher or faculty
 CREATE TABLE complaint_assignments (
   id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -93,7 +93,7 @@ CREATE TABLE complaint_assignments (
   updated_at      TIMESTAMP DEFAULT NOW()
 );
 
--- ── Teacher Responses on Complaints ───────────────────────
+--  Teacher Responses on Complaints 
 CREATE TABLE complaint_responses (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   complaint_id UUID REFERENCES complaints(id) ON DELETE CASCADE,
@@ -103,7 +103,7 @@ CREATE TABLE complaint_responses (
   created_at   TIMESTAMP DEFAULT NOW()
 );
 
--- ── Notifications ──────────────────────────────────────────
+--  Notifications
 CREATE TABLE notifications (
   id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id    UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -114,7 +114,7 @@ CREATE TABLE notifications (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- ── Audit Log ──────────────────────────────────────────────
+-- Audit Log 
 CREATE TABLE audit_logs (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   action       VARCHAR(100) NOT NULL,
@@ -125,7 +125,7 @@ CREATE TABLE audit_logs (
   created_at   TIMESTAMP DEFAULT NOW()
 );
 
--- ── Indexes ────────────────────────────────────────────────
+-- Indexes 
 CREATE INDEX idx_users_role            ON users(role);
 CREATE INDEX idx_users_faculty         ON users(faculty_id);
 CREATE INDEX idx_community_posts_status ON community_posts(status);
@@ -136,7 +136,7 @@ CREATE INDEX idx_assignments_complaint ON complaint_assignments(complaint_id);
 CREATE INDEX idx_assignments_assigned  ON complaint_assignments(assigned_to);
 CREATE INDEX idx_notifications_user    ON notifications(user_id, is_read);
 
--- ── Seed: Faculties ────────────────────────────────────────
+-- Seed: Faculties 
 INSERT INTO faculties (name, code) VALUES
   ('Civil Engineering', 'BCE'),
   ('Computer Engineering','BCT'),
@@ -144,7 +144,7 @@ INSERT INTO faculties (name, code) VALUES
   ('Electronics Engineering','BEX'),
   ('Mechanical Engineering','BME');
 
--- ── Seed: Users (passwords are all "password123") ──────────
+-- Seed: Users (passwords are all "password123") for testing purposes
 -- bcrypt hash for "password123" with 10 rounds
 INSERT INTO users (name, email, password_hash, role, faculty_id) VALUES
   ('Admin User',    'admin@college.edu.np',   '$2a$10$WZ65SxlO/HJoFlcQbsndTOIf3Qif2ak1Sq/t75Ex4xnNXmob0OryS', 'admin',   NULL),
@@ -152,4 +152,3 @@ INSERT INTO users (name, email, password_hash, role, faculty_id) VALUES
   ('Prof. Thapa',   'thapa@college.edu.np',   '$2a$10$WZ65SxlO/HJoFlcQbsndTOIf3Qif2ak1Sq/t75Ex4xnNXmob0OryS', 'teacher', (SELECT id FROM faculties WHERE code='BCE')),
   ('Student Demo',  'student@college.edu.np', '$2a$10$WZ65SxlO/HJoFlcQbsndTOIf3Qif2ak1Sq/t75Ex4xnNXmob0OryS', 'student', (SELECT id FROM faculties WHERE code='BCT'));
 
--- Note: seed password hash is for "password123". Change all passwords in production.
