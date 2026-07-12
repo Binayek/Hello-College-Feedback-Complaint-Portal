@@ -1,3 +1,4 @@
+//import essential libraries and components
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
@@ -8,8 +9,13 @@ import {
 } from '../../components/shared/UI';
 import { Plus, X, Eye } from 'lucide-react';
 
-// ── Complaint Detail Modal (Admin) ─────────────────────────
+//AdminComplaintModal – A popup window where the admin can 
+// view a complaint, 
+// assign it, 
+// update its status, 
+// and reveal an anonymous student's identity.
 function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpdate }) {
+  //state variables
   const [data, setData]         = useState(null);
   const [loading, setLoading]   = useState(true);
   const [assignForm, setAssignForm] = useState({ assigned_to_type: 'teacher', assigned_to: '', faculty_id: '', remarks: '' });
@@ -17,18 +23,21 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
   const [revealReason, setRevealReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  //function to fetch complaint data from the server
   const fetchData = () => {
     api.get(`/complaints/${complaintId}`)
       .then(res => { setData(res.data); setStatusForm(f => ({ ...f, status: res.data.complaint.status })); })
       .finally(() => setLoading(false));
   };
-
+  //fetch data when complaintId changes
   useEffect(() => { fetchData(); }, [complaintId]);
 
+  //function to handle assignment of complaint
   const handleAssign = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      //send assignment data to the server
       await api.post(`/complaints/${complaintId}/assign`, assignForm);
       toast.success('Complaint assigned!');
       fetchData(); onUpdate();
@@ -36,6 +45,7 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
     finally { setSubmitting(false); }
   };
 
+  //function to handle status update of complaint
   const handleStatus = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -47,6 +57,7 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
     finally { setSubmitting(false); }
   };
 
+  //function to handle revelation of student's identity
   const handleReveal = async () => {
     if (!revealReason.trim()) return toast.error('Reason is required');
     if (!window.confirm('This will reveal the student\'s identity and create a permanent audit log. Proceed?')) return;
@@ -61,7 +72,7 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
   };
 
   const c = data?.complaint;
-
+  //rendering the modal
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 640 }} onClick={e => e.stopPropagation()}>
@@ -72,7 +83,7 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
         <div className="modal-body">
           {loading || !data ? <Spinner /> : (
             <>
-              {/* Status row */}
+              {/* Status row to show complaint status, priority, and anonymity */}
               <div className="badge-row" style={{ marginBottom: '1rem' }}>
                 <StatusBadge status={c.status} />
                 <PriorityBadge priority={c.priority} />
@@ -111,6 +122,7 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
 
               {/* Assign */}
               <SectionLabel>Assign Complaint</SectionLabel>
+              {/* Form to assign the complaint to a teacher or faculty */}
               <form onSubmit={handleAssign} style={{ marginBottom: '1.25rem' }}>
                 <div className="form-grid-2" style={{ marginBottom: '0.75rem' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -152,6 +164,7 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
 
               {/* Status update */}
               <SectionLabel>Update Status</SectionLabel>
+              {/* Form to update the status of the complaint */}
               <form onSubmit={handleStatus} style={{ marginBottom: '1.25rem' }}>
                 <div className="form-grid-2" style={{ marginBottom: '0.75rem' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -205,32 +218,38 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
   );
 }
 
-// ── Admin Dashboard ────────────────────────────────────────
+// Admin Dashboard
 export function AdminDashboard() {
+
   const { user } = useAuth();
   const [stats, setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
 
+  //fetch analytics data when component mounts
   useEffect(() => {
     api.get('/complaints/analytics')
       .then(res => setStats(res.data))
       .finally(() => setLoading(false));
   }, []);
 
+  //empty object to map status counts for easy access
   const statusMap = {};
+  //populate statusMap with counts from stats
   stats?.byStatus?.forEach(s => { statusMap[s.status] = s.count; });
 
+  //rendering the admin dashboard
   return (
     <div>
       <div className="page-header">
         <div>
           <h1 className="page-title">Admin Dashboard</h1>
-          <p className="page-subtitle">Hello College — Administration</p>
+          <p className="page-subtitle">College Administration</p>
         </div>
       </div>
 
       {loading ? <Spinner /> : (
         <>
+          {/* Summary Stats */}
           <div className="stats-grid">
             <div className="stat-card"><div className="stat-value">{stats?.summary?.total || 0}</div><div className="stat-label">Total Complaints</div></div>
             <div className="stat-card"><div className="stat-value" style={{ color: 'var(--danger)' }}>{stats?.summary?.open || 0}</div><div className="stat-label">Open</div></div>
@@ -272,8 +291,9 @@ export function AdminDashboard() {
   );
 }
 
-// ── Admin Complaints ───────────────────────────────────────
+// Admin Complaints
 export function AdminComplaints() {
+  //state variables
   const [complaints, setComplaints] = useState([]);
   const [teachers, setTeachers]     = useState([]);
   const [faculties, setFaculties]   = useState([]);
@@ -283,16 +303,21 @@ export function AdminComplaints() {
   const [filters, setFilters]       = useState({ status: '', category: '', priority: '' });
 
   const fetchAll = () => {
+    //construct query parameters based on selected filters
     const params = {};
     if (filters.status)   params.status = filters.status;
     if (filters.category) params.category = filters.category;
     if (filters.priority) params.priority = filters.priority;
 
     Promise.all([
+      //fetch complaints with applied filters
       api.get('/complaints', { params }),
+      //fetch teachers
       api.get('/users/teachers'),
+      //fetch faculties
       api.get('/users/faculties'),
     ]).then(([c, t, f]) => {
+      //add complaints, teachers, and faculties to state
       setComplaints(c.data.complaints);
       setTeachers(t.data.teachers);
       setFaculties(f.data.faculties);
@@ -302,6 +327,7 @@ export function AdminComplaints() {
 
   useEffect(() => { fetchAll(); }, [filters]);
 
+  //tabs for filtering complaints by status
   const tabs = [
     { key: 'open',     label: 'Open' },
     { key: 'assigned', label: 'Assigned' },
@@ -310,6 +336,7 @@ export function AdminComplaints() {
     { key: 'all',      label: 'All' },
   ];
 
+  //filter complaints based on the active tab
   const filtered = complaints.filter(c => {
     if (activeTab === 'open')     return c.status === 'open';
     if (activeTab === 'assigned') return c.status === 'assigned';
@@ -318,6 +345,7 @@ export function AdminComplaints() {
     return true;
   });
 
+  //rendering the admin complaints page
   return (
     <div>
       <div className="page-header">
@@ -329,6 +357,7 @@ export function AdminComplaints() {
 
       {/* Filter bar */}
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        {/* Filter by status */}
         <select className="form-select" style={{ width: 'auto' }} value={filters.priority}
           onChange={e => setFilters(f => ({ ...f, priority: e.target.value }))}>
           <option value="">All priorities</option>
@@ -336,6 +365,7 @@ export function AdminComplaints() {
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
+        {/* Filter by category */}
         <select className="form-select" style={{ width: 'auto' }} value={filters.category}
           onChange={e => setFilters(f => ({ ...f, category: e.target.value }))}>
           <option value="">All categories</option>
@@ -346,6 +376,7 @@ export function AdminComplaints() {
       </div>
 
       <div className="tabs">
+        {/* Render tabs for filtering complaints by status */}
         {tabs.map(({ key, label }) => {
           const count = key === 'all' ? complaints.length
             : key === 'open'     ? complaints.filter(c => c.status === 'open').length
@@ -359,7 +390,7 @@ export function AdminComplaints() {
           );
         })}
       </div>
-
+        {/* Render the list of complaints or an empty state if there are no complaints */}
       <div className="card">
         {loading ? <Spinner /> : filtered.length === 0 ? (
           <EmptyState icon="📭" title="No complaints" description="Nothing in this category." />
@@ -387,7 +418,7 @@ export function AdminComplaints() {
           ))
         )}
       </div>
-
+        {/* Render the AdminComplaintModal if a complaint is selected */}
       {selectedId && (
         <AdminComplaintModal
           complaintId={selectedId}
@@ -401,20 +432,25 @@ export function AdminComplaints() {
   );
 }
 
-// ── Admin Analytics ────────────────────────────────────────
+// ── Admin Analytics 
 export function AdminAnalytics() {
+
+  //state variables
   const [stats, setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
 
+  //fetch analytics
   useEffect(() => {
     api.get('/complaints/analytics').then(res => setStats(res.data)).finally(() => setLoading(false));
   }, []);
 
+  //rendering analytics page
   return (
     <div>
       <div className="page-header"><div><h1 className="page-title">Analytics</h1><p className="page-subtitle">Complaint trends and resolution data</p></div></div>
       {loading ? <Spinner /> : (
         <>
+          {/* Summary Stats */}
           <div className="stats-grid">
             <div className="stat-card"><div className="stat-value">{stats?.summary?.total}</div><div className="stat-label">Total Complaints</div></div>
             <div className="stat-card"><div className="stat-value" style={{ color: 'var(--danger)' }}>{stats?.summary?.open}</div><div className="stat-label">Open</div></div>
@@ -422,6 +458,7 @@ export function AdminAnalytics() {
             <div className="stat-card"><div className="stat-value">{stats?.summary?.avg_resolution_hours || '—'}</div><div className="stat-label">Avg Resolution (hrs)</div></div>
           </div>
 
+          {/* By Status */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
             <div className="card">
               <div className="card-header"><span className="card-title">By Status</span></div>
@@ -433,6 +470,7 @@ export function AdminAnalytics() {
                 ))}
               </div>
             </div>
+            {/* By Priority */}
             <div className="card">
               <div className="card-header"><span className="card-title">By Priority</span></div>
               <div className="card-body" style={{ padding: '0.75rem 1.5rem' }}>
@@ -443,6 +481,7 @@ export function AdminAnalytics() {
                 ))}
               </div>
             </div>
+            {/* By Category */}
             <div className="card">
               <div className="card-header"><span className="card-title">By Category</span></div>
               <div className="card-body" style={{ padding: '0.75rem 1.5rem' }}>
@@ -454,7 +493,9 @@ export function AdminAnalytics() {
               </div>
             </div>
           </div>
+          
 
+          {/* Daily Activity Chart */}
           {stats?.dailyActivity?.length > 0 && (
             <div className="card" style={{ marginTop: '1.5rem' }}>
               <div className="card-header"><span className="card-title">Daily Activity (last 30 days)</span></div>
@@ -481,8 +522,10 @@ export function AdminAnalytics() {
   );
 }
 
-// ── Admin Users ────────────────────────────────────────────
+// Admin Users 
 export function AdminUsers() {
+
+  // State variables
   const [users, setUsers]       = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -490,14 +533,17 @@ export function AdminUsers() {
   const [form, setForm]         = useState({ name: '', email: '', password: '', role: 'teacher', faculty_id: '' });
   const [submitting, setSubmitting] = useState(false);
 
+  // Fetch users and faculties
   const fetchAll = () => {
     Promise.all([api.get('/users'), api.get('/users/faculties')])
       .then(([u, f]) => { setUsers(u.data.users); setFaculties(f.data.faculties); })
       .finally(() => setLoading(false));
   };
 
+  // Initial fetch on component mount
   useEffect(() => { fetchAll(); }, []);
 
+  // Handle create user
   const handleCreate = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -511,6 +557,7 @@ export function AdminUsers() {
     finally { setSubmitting(false); }
   };
 
+  // Handle toggle user active/inactive
   const handleToggle = async (id, isActive) => {
     try {
       await api.patch(`/users/${id}/toggle`);
@@ -519,8 +566,10 @@ export function AdminUsers() {
     } catch { toast.error('Failed to update'); }
   };
 
+  //define role colors for badges
   const roleColors = { admin: '#C2410C', teacher: '#6D28D9', student: '#2563EB' };
 
+  //rendering manage users page
   return (
     <div>
       <div className="page-header">
@@ -562,7 +611,7 @@ export function AdminUsers() {
           </div>
         </div>
       )}
-
+      {/* rendering users table */}
       <div className="card">
         {loading ? <Spinner /> : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -574,6 +623,7 @@ export function AdminUsers() {
               </tr>
             </thead>
             <tbody>
+              {/* Render each user in a table row */}
               {users.map(u => (
                 <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '0.875rem 1rem', fontWeight: 500, fontSize: '0.875rem' }}>{u.name}</td>

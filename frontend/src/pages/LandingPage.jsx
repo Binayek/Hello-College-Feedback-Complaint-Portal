@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../components/shared/Logo';
 
 export default function Landing() {
   return (
@@ -8,7 +9,7 @@ export default function Landing() {
       {/* Nav */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2rem', borderBottom: '1px solid var(--border)' }}>
         <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          💬 Hello College
+          <Logo showTagline={true} width={300} /> 
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
           <Link to="/login" style={{ padding: '0.45rem 1rem', border: '1px solid var(--border)', borderRadius: 6, fontSize: '0.875rem', color: 'var(--text)', textDecoration: 'none', fontWeight: 500 }}>

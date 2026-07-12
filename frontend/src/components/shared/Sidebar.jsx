@@ -1,10 +1,13 @@
+//import react, navigate, useAuth, api, TimeAgo, lucide-react icons
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import { TimeAgo } from './UI';
 import { Home, BookOpen, FileText, BarChart2, Users, LogOut, Bell } from 'lucide-react';
+import Logo from './Logo';
 
+// Define navigation items based on user roles
 const navByRole = {
   student: [
     { to: '/student',           label: 'Dashboard',        icon: Home      },
@@ -25,11 +28,14 @@ const navByRole = {
   ],
 };
 
+//Notification panel component
 function NotifPanel({ onClose }) {
+  //set state for notifications and unread count, and ref for panel
   const [notifs, setNotifs]   = useState([]);
   const [unread, setUnread]   = useState(0);
   const panelRef              = useRef(null);
 
+  //fetch notifications on mount
   useEffect(() => {
     api.get('/notifications').then(res => {
       setNotifs(res.data.notifications);
@@ -37,18 +43,21 @@ function NotifPanel({ onClose }) {
     });
   }, []);
 
+  //mark all notifications as read
   const markRead = async () => {
     await api.patch('/notifications/read');
     setUnread(0);
     setNotifs(n => n.map(x => ({ ...x, is_read: true })));
   };
 
+  //close panel when clicking outside
   useEffect(() => {
     const handler = (e) => { if (panelRef.current && !panelRef.current.contains(e.target)) onClose(); };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
+  //render notification panel
   return (
     <div className="notif-panel" ref={panelRef}>
       <div className="notif-header">
@@ -69,13 +78,17 @@ function NotifPanel({ onClose }) {
   );
 }
 
+//sidebar component
 export default function Sidebar() {
+
+  //fetch user data, handle logout, and manage notification state
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showNotif, setShowNotif] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const navItems = navByRole[user?.role] || [];
 
+    //poll for unread notifications every minute
   useEffect(() => {
     if (!user) return;
     api.get('/notifications').then(res => setUnreadCount(res.data.unread)).catch(() => {});
@@ -85,15 +98,18 @@ export default function Sidebar() {
     return () => clearInterval(interval);
   }, [user]);
 
+  //get user initials for avatar
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
 
   return (
     <aside className="sidebar">
+      {/* Sidebar header with logo and user role badge */}
       <div className="sidebar-header">
-        <div className="sidebar-logo">💬 Hello College</div>
+        <div className="sidebar-logo"><Logo width={200} /></div>
         <div className="sidebar-badge">{user?.role}</div>
       </div>
 
+      {/* Navigation links based on user role */}
       <nav className="sidebar-nav">
         {navItems.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -125,7 +141,8 @@ export default function Sidebar() {
           </button>
           {showNotif && <NotifPanel onClose={() => setShowNotif(false)} />}
         </div>
-
+        
+        {/* User Info and Logout */}
         <div className="sidebar-user">
           <div className="sidebar-avatar">{initials}</div>
           <div className="sidebar-user-info">

@@ -11,27 +11,31 @@ import { Plus, X, Eye } from 'lucide-react';
 
 const CATEGORIES = ['Academic', 'Faculty Conduct', 'Facilities', 'Administration', 'Harassment', 'Financial', 'Other'];
 
-// ── Complaint Detail Modal ─────────────────────────────────
+//complaint description modal(pop up window)
 function ComplaintDetailModal({ complaintId, onClose }) {
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
 
+  //fetches selected complaint
   useEffect(() => {
     api.get(`/complaints/${complaintId}`)
       .then(res => setData(res.data))
       .finally(() => setLoading(false));
   }, [complaintId]);
 
+  //renders modal
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
+          {/*complaint title as modal's title*/}
           <span className="card-title">{data?.complaint?.title || 'Complaint Details'}</span>
           <button className="modal-close" onClick={onClose}><X size={18} /></button>
         </div>
         <div className="modal-body">
           {loading || !data ? <Spinner /> : (
             <>
+              {/*Status, Priority, Annonymity badge of the complaint*/}
               <div className="badge-row" style={{ marginBottom: '1rem' }}>
                 <StatusBadge status={data.complaint.status} />
                 <PriorityBadge priority={data.complaint.priority} />
@@ -42,12 +46,14 @@ function ComplaintDetailModal({ complaintId, onClose }) {
               </div>
 
               <SectionLabel>Your Complaint</SectionLabel>
+              {/*complaint description*/}
               <ResponseBox
                 content={data.complaint.description}
                 time={data.complaint.created_at}
                 color="var(--bg)" borderColor="var(--border)"
               />
 
+                {/*assigned teacher or faculty*/}
               {data.complaint.assigned_to_name && (
                 <div className="alert alert-info" style={{ marginTop: '1rem' }}>
                   📋 Assigned to: <strong>{data.complaint.assigned_to_name}</strong>
@@ -55,6 +61,7 @@ function ComplaintDetailModal({ complaintId, onClose }) {
                 </div>
               )}
 
+              {/*response from teacher/faculty*/}
               {data.responses.length > 0 && (
                 <div style={{ marginTop: '1rem' }}>
                   <SectionLabel>Responses</SectionLabel>
@@ -73,6 +80,7 @@ function ComplaintDetailModal({ complaintId, onClose }) {
                 </div>
               )}
 
+              {/*identity revealed notice*/}
               {data.complaint.identity_revealed && (
                 <div className="alert alert-danger" style={{ marginTop: '1rem' }}>
                   🔓 Your identity has been revealed by administration for this case.
@@ -92,22 +100,26 @@ function ComplaintDetailModal({ complaintId, onClose }) {
   );
 }
 
-// ── Student Dashboard ──────────────────────────────────────
+// Student Dashboard 
 export function StudentDashboard() {
+  //fetches user data and define state variables.
   const { user } = useAuth();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading]       = useState(true);
 
+  //fetches complaints data from the API
   useEffect(() => {
     api.get('/complaints/mine')
       .then(res => setComplaints(res.data.complaints))
       .finally(() => setLoading(false));
   }, []);
 
+  //filter complaints based on their status
   const open     = complaints.filter(c => c.status === 'open').length;
   const inProg   = complaints.filter(c => c.status === 'in_progress').length;
   const resolved = complaints.filter(c => ['resolved', 'closed'].includes(c.status)).length;
 
+  //renders the dashboard with statistics and recent complaints
   return (
     <div>
       <div className="page-header">
@@ -155,7 +167,7 @@ export function StudentDashboard() {
   );
 }
 
-// ── Student Complaints ─────────────────────────────────────
+// My Complaints page for students to view and submit complaints
 export function StudentComplaints() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -165,6 +177,7 @@ export function StudentComplaints() {
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab]   = useState('all');
 
+  //fetches complaints data from the API
   const fetchComplaints = () => {
     api.get('/complaints/mine')
       .then(res => setComplaints(res.data.complaints))
@@ -174,6 +187,7 @@ export function StudentComplaints() {
 
   useEffect(() => { fetchComplaints(); }, []);
 
+  //handles form submission for new complaints
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -187,6 +201,7 @@ export function StudentComplaints() {
     finally { setSubmitting(false); }
   };
 
+  //defines tabs for filtering complaints
   const tabs = [
     { key: 'all',      label: 'All' },
     { key: 'open',     label: 'Open' },
@@ -194,6 +209,7 @@ export function StudentComplaints() {
     { key: 'resolved', label: 'Resolved' },
   ];
 
+  //filters complaints based on the active tab selection
   const filtered = complaints.filter(c => {
     if (activeTab === 'open')     return c.status === 'open';
     if (activeTab === 'active')   return ['assigned', 'in_progress'].includes(c.status);
@@ -201,6 +217,7 @@ export function StudentComplaints() {
     return true;
   });
 
+  //renders the My Complaints page with complaint submission form and list of complaints
   return (
     <div>
       <div className="page-header">
@@ -215,6 +232,7 @@ export function StudentComplaints() {
         </div>
       </div>
 
+      {/*renders the complaint submission form if showForm is true*/}
       {showForm && (
         <div className="card" style={{ marginBottom: '1.5rem' }}>
           <div className="card-header">
@@ -273,6 +291,7 @@ export function StudentComplaints() {
         </div>
       )}
 
+       {/*renders tabs for filtering complaints by status*/} 
       <div className="tabs">
         {tabs.map(({ key, label }) => {
           const count = key === 'all' ? complaints.length
@@ -287,6 +306,7 @@ export function StudentComplaints() {
         })}
       </div>
 
+        {/*renders the list of complaints based on the selected tab and loading state*/}
       <div className="card">
         {loading ? <Spinner /> : filtered.length === 0 ? (
           <EmptyState icon="📭" title="No complaints here" description="Nothing in this category." />
@@ -314,7 +334,8 @@ export function StudentComplaints() {
           ))
         )}
       </div>
-
+        
+        {/*renders the complaint detail modal if a complaint is selected*/}
       {selectedId && (
         <ComplaintDetailModal complaintId={selectedId} onClose={() => setSelectedId(null)} />
       )}

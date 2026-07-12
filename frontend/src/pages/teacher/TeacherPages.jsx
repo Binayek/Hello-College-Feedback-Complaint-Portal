@@ -8,18 +8,22 @@ import {
 } from '../../components/shared/UI';
 import { X } from 'lucide-react';
 
+//component for modal to view and respond to a complaint
+//pop up modal that shows the complaint details and allows the teacher to respond to it
 function ComplaintModal({ complaintId, onClose, onUpdate }) {
   const [data, setData]         = useState(null);
   const [loading, setLoading]   = useState(true);
   const [form, setForm]         = useState({ content: '', new_status: '' });
   const [submitting, setSubmitting] = useState(false);
 
+  //function to fetch complaint details from the API when the modal is opened
   useEffect(() => {
     api.get(`/complaints/${complaintId}`)
       .then(res => { setData(res.data); setForm(f => ({ ...f, new_status: res.data.complaint.status === 'in_progress' ? 'resolved' : 'in_progress' })); })
       .finally(() => setLoading(false));
   }, [complaintId]);
 
+  //function to handle the form submission when the teacher responds to the complaint
   const handleRespond = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -32,11 +36,14 @@ function ComplaintModal({ complaintId, onClose, onUpdate }) {
     finally { setSubmitting(false); }
   };
 
+  //get the complaint data from the API response
   const c = data?.complaint;
 
+  //render the modal with complaint details, previous responses, and a form to respond
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
+        {/* Modal header with title and close button */}
         <div className="modal-header">
           <span className="card-title">{c?.title || 'Complaint'}</span>
           <button className="modal-close" onClick={onClose}><X size={18} /></button>
@@ -44,13 +51,14 @@ function ComplaintModal({ complaintId, onClose, onUpdate }) {
         <div className="modal-body">
           {loading || !data ? <Spinner /> : (
             <>
+            {/* Display badges for status, priority, anonymity, and category of the complaint */}
               <div className="badge-row" style={{ marginBottom: '1rem' }}>
                 <StatusBadge status={c.status} />
                 <PriorityBadge priority={c.priority} />
                 <AnonBadge isAnonymous={c.is_anonymous} />
                 {c.category && <span className="badge" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>{c.category}</span>}
               </div>
-
+            {/* Display the student information and assignment remarks if available */}
               <SectionLabel>From</SectionLabel>
               <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
                 {c.is_anonymous && !c.identity_revealed
@@ -65,6 +73,7 @@ function ComplaintModal({ complaintId, onClose, onUpdate }) {
                 </div>
               )}
 
+              {/* Display the complaint description and any previous responses */}
               <SectionLabel>Complaint</SectionLabel>
               <ResponseBox content={c.description} time={c.created_at} color="var(--bg)" borderColor="var(--border)" />
 
@@ -81,6 +90,7 @@ function ComplaintModal({ complaintId, onClose, onUpdate }) {
                 </div>
               )}
 
+              {/* Display the response form if the complaint is not resolved or closed */}
               {!['resolved', 'closed'].includes(c.status) && (
                 <form onSubmit={handleRespond} style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
                   <SectionLabel>Add Response</SectionLabel>
@@ -111,21 +121,25 @@ function ComplaintModal({ complaintId, onClose, onUpdate }) {
   );
 }
 
+// Teacher dashboard page that shows summary stats and recent complaints assigned to the teacher
 export function TeacherDashboard() {
   const { user } = useAuth();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading]       = useState(true);
 
+  //fetch the complaints assigned to the teacher when the component mounts
   useEffect(() => {
     api.get('/complaints/assigned')
       .then(res => setComplaints(res.data.complaints))
       .finally(() => setLoading(false));
   }, []);
 
+  //categorize complaints by status for display in the dashboard stats
   const open     = complaints.filter(c => c.status === 'assigned').length;
   const inProg   = complaints.filter(c => c.status === 'in_progress').length;
   const resolved = complaints.filter(c => ['resolved', 'closed'].includes(c.status)).length;
 
+  //render the dashboard with welcome message, stats, and recent complaints
   return (
     <div>
       <div className="page-header">
@@ -135,6 +149,7 @@ export function TeacherDashboard() {
         </div>
       </div>
 
+      {/* Display summary statistics for complaints assigned to the teacher */}
       <div className="stats-grid">
         <div className="stat-card"><div className="stat-value">{complaints.length}</div><div className="stat-label">Total Assigned</div></div>
         <div className="stat-card"><div className="stat-value" style={{ color: open > 0 ? 'var(--danger)' : 'var(--text-muted)' }}>{open}</div><div className="stat-label">Needs Response</div></div>
@@ -167,12 +182,14 @@ export function TeacherDashboard() {
   );
 }
 
+// Teacher complaints page that shows all complaints assigned to the teacher with filtering and modal for responding
 export function TeacherComplaints() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [selectedId, setSelectedId] = useState(null);
   const [activeTab, setActiveTab]   = useState('pending');
 
+  //function to fetch the complaints assigned to the teacher from the API
   const fetchComplaints = () => {
     api.get('/complaints/assigned')
       .then(res => setComplaints(res.data.complaints))
@@ -182,6 +199,7 @@ export function TeacherComplaints() {
 
   useEffect(() => { fetchComplaints(); }, []);
 
+  //types of complaints based on their status
   const tabs = [
     { key: 'pending',  label: 'Needs Response' },
     { key: 'active',   label: 'In Progress' },
@@ -189,6 +207,7 @@ export function TeacherComplaints() {
     { key: 'all',      label: 'All' },
   ];
 
+  //filter the complaints based on the active tab selected by the teacher
   const filtered = complaints.filter(c => {
     if (activeTab === 'pending')  return c.status === 'assigned';
     if (activeTab === 'active')   return c.status === 'in_progress';
@@ -196,6 +215,7 @@ export function TeacherComplaints() {
     return true;
   });
 
+  //render the complaints page with tabs for filtering and a modal for responding to complaints
   return (
     <div>
       <div className="page-header">
@@ -245,6 +265,7 @@ export function TeacherComplaints() {
         )}
       </div>
 
+      {/* Render the complaint modal if a complaint is selected */}
       {selectedId && (
         <ComplaintModal
           complaintId={selectedId}

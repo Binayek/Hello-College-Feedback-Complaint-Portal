@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 200">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    .wm  { font-family: 'Inter', sans-serif; font-size: 42px; font-weight: 700; fill: #1E293B; letter-spacing: -1.5px; }
+    .wms { font-family: 'Inter', sans-serif; font-size: 42px; font-weight: 400; fill: #2563EB; letter-spacing: -1px; }
+    .tag { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; fill: #64748B; letter-spacing: 0.5px; }
+  </style>
+
+  <!-- Speech bubble mark -->
+  <rect x="80" y="40" width="96" height="82" rx="18" fill="#2563EB"/>
+  <polygon points="88,122 108,122 94,140" fill="#2563EB"/>
+  <polyline points="102,81 120,99 154,65" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Wordmark -->
+  <text x="200" y="105" class="wm">Hello</text>
+  <text x="315" y="105" class="wms"> College</text>
+
+  <!-- Divider -->
+  <line x1="200" y1="118" x2="530" y2="118" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Tagline -->
+  <text x="201" y="140" class="tag">Student Feedback &amp; Complaint Portal</text>
+</svg>

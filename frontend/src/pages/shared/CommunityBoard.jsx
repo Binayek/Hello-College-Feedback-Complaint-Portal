@@ -5,15 +5,19 @@ import toast from 'react-hot-toast';
 import { TimeAgo, EmptyState, Spinner, SectionLabel, AnonBadge, RoleBadge } from '../../components/shared/UI';
 import { MessageSquare, Plus, X, Trash2, Search } from 'lucide-react';
 
+
+//types of complaints
 const CATEGORIES = ['Academic', 'Facilities', 'Administration', 'Faculty', 'Events', 'Other'];
 
+// Modal for post details and comments
 function PostDetailModal({ post, onClose, isAdmin }) {
   const { user } = useAuth();
   const [comments, setComments]   = useState([]);
   const [loadingC, setLoadingC]   = useState(true);
   const [form, setForm]           = useState({ content: '', is_anonymous: false });
   const [submitting, setSubmitting] = useState(false);
-
+  
+  // Fetches comments for the post from the API
   const fetchComments = useCallback(() => {
     api.get(`/community/${post.id}`)
       .then(res => setComments(res.data.comments))
@@ -22,6 +26,7 @@ function PostDetailModal({ post, onClose, isAdmin }) {
 
   useEffect(() => { fetchComments(); }, [fetchComments]);
 
+  // Handles submission of a new comment
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -34,9 +39,11 @@ function PostDetailModal({ post, onClose, isAdmin }) {
     finally { setSubmitting(false); }
   };
 
+  //renders the modal with post details, comments, and a form to add new comments
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
+        {/* Modal header with post title, category, and anonymous badge */ }
         <div className="modal-header">
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ fontSize: '1rem', fontWeight: 600 }}>{post.title}</h2>
@@ -57,7 +64,7 @@ function PostDetailModal({ post, onClose, isAdmin }) {
           </p>
 
           <hr className="section-divider" />
-
+            {/* Section for displaying comments and adding new comments */ }
           <SectionLabel>
             <MessageSquare size={12} style={{ display: 'inline', marginRight: 4 }} />
             Comments ({comments.length})
@@ -79,7 +86,7 @@ function PostDetailModal({ post, onClose, isAdmin }) {
               ))}
             </div>
           )}
-
+          {/* Form for adding a new comment */ }
           <form onSubmit={submit} style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
             <div className="form-group">
               <textarea className="form-textarea" value={form.content}
@@ -103,6 +110,7 @@ function PostDetailModal({ post, onClose, isAdmin }) {
   );
 }
 
+// Main component for the community board page
 export default function CommunityBoard() {
   const { user } = useAuth();
   const [posts, setPosts]         = useState([]);
@@ -114,6 +122,7 @@ export default function CommunityBoard() {
   const [form, setForm]           = useState({ title: '', content: '', category: '', is_anonymous: false });
   const [submitting, setSubmitting] = useState(false);
 
+  // Fetches posts from the API based on search and filter criteria
   const fetchPosts = useCallback(() => {
     const params = {};
     if (search)    params.search = search;
@@ -126,6 +135,7 @@ export default function CommunityBoard() {
 
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
+  // Handles submission of a new post
   const handleCreate = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -139,6 +149,7 @@ export default function CommunityBoard() {
     finally { setSubmitting(false); }
   };
 
+  // Handles removal of a post by an admin
   const handleRemove = async (e, id) => {
     e.stopPropagation();
     if (!window.confirm('Remove this post?')) return;
@@ -148,6 +159,7 @@ export default function CommunityBoard() {
 
   return (
     <div>
+      {/* Page header with title, subtitle, and new post button */ }
       <div className="page-header">
         <div>
           <h1 className="page-title">Community Board</h1>
@@ -160,7 +172,7 @@ export default function CommunityBoard() {
         </div>
       </div>
 
-      {/* Create form */}
+      {/*create a new post form*/}
       {showCreate && (
         <div className="card" style={{ marginBottom: '1.5rem' }}>
           <div className="card-header">
@@ -191,12 +203,14 @@ export default function CommunityBoard() {
                   onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
                   placeholder="Share your thoughts, ask a question, or start a discussion…" required />
               </div>
+              {/* Checkbox for posting anonymously and submit button */ }
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <label className="checkbox-row" style={{ flex: '0 0 auto' }}>
                   <input type="checkbox" checked={form.is_anonymous}
                     onChange={e => setForm(f => ({ ...f, is_anonymous: e.target.checked }))} />
                   <label>Post anonymously</label>
                 </label>
+                {/* Submit button for publishing the post */ }
                 <button type="submit" className="btn btn-primary" disabled={submitting}>
                   {submitting ? 'Publishing…' : 'Publish Post'}
                 </button>
@@ -206,7 +220,7 @@ export default function CommunityBoard() {
         </div>
       )}
 
-      {/* Search + filter bar */}
+      {/* Search bar */}
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
           <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -214,6 +228,7 @@ export default function CommunityBoard() {
             placeholder="Search posts…" value={search}
             onChange={e => setSearch(e.target.value)} />
         </div>
+        {/* Category filter dropdown */ }
         <select className="form-select" style={{ width: 'auto' }} value={filterCat}
           onChange={e => setFilterCat(e.target.value)}>
           <option value="">All categories</option>
@@ -256,6 +271,7 @@ export default function CommunityBoard() {
         )}
       </div>
 
+        {/* Post detail modal for viewing and commenting on a selected post */ }
       {selected && (
         <PostDetailModal
           post={selected}
