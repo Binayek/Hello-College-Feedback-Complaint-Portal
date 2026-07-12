@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 
+// Generate JWT token for a user
 const generateToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
@@ -9,14 +10,17 @@ const generateToken = (userId) =>
 
 // POST /api/auth/register — students self-register
 const register = async (req, res) => {
+  // Validate input fields
   const { name, email, password, faculty_id } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Name, email, and password are required' });
   }
   try {
+    // Check if the email is already registered
     const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing.rows.length) return res.status(409).json({ error: 'Email already registered' });
 
+    // Hash the password and insert the new user into the database
     const hash = await bcrypt.hash(password, 10);
     const { rows } = await pool.query(
       `INSERT INTO users (name, email, password_hash, role, faculty_id)
@@ -24,9 +28,11 @@ const register = async (req, res) => {
        RETURNING id, name, email, role, faculty_id`,
       [name, email.toLowerCase(), hash, faculty_id || null]
     );
+    // Generate a JWT token for the newly registered user
     const token = generateToken(rows[0].id);
     res.status(201).json({ user: rows[0], token });
   } catch (err) {
+    // Log the error and return a 500 Internal Server Error response
     console.error('Register error:', err);
     res.status(500).json({ error: 'Registration failed' });
   }
@@ -34,10 +40,12 @@ const register = async (req, res) => {
 
 // POST /api/auth/login
 const login = async (req, res) => {
+  // Validate input fields
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
 
   try {
+    // Query the database to find the user by email and check if they are active
     const { rows } = await pool.query(
       `SELECT u.id, u.name, u.email, u.password_hash, u.role, u.is_active,
               u.faculty_id, f.name AS faculty_name, f.code AS faculty_code
@@ -45,12 +53,15 @@ const login = async (req, res) => {
        WHERE u.email = $1`,
       [email.toLowerCase()]
     );
+    // If no user is found or the user is inactive, return a 401 Unauthorized response
     const user = rows[0];
     if (!user || !user.is_active) return res.status(401).json({ error: 'Invalid credentials' });
 
+    // Compare the provided password with the stored password hash
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
+    // Generate a JWT token for the authenticated user and return the user data without the password hash
     const { password_hash, ...safeUser } = user;
     const token = generateToken(user.id);
     res.json({ user: safeUser, token });

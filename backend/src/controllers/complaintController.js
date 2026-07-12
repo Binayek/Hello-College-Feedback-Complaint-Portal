@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 
-// ── STUDENT ────────────────────────────────────────────────
+// STUDENT 
 
 // POST /api/complaints — student files complaint
 const submitComplaint = async (req, res) => {
@@ -113,7 +113,7 @@ const getComplaint = async (req, res) => {
   }
 };
 
-// ── ADMIN ──────────────────────────────────────────────────
+// ADMIN 
 
 // GET /api/complaints — admin views all
 const getAllComplaints = async (req, res) => {
@@ -335,7 +335,7 @@ const getAnalytics = async (req, res) => {
   }
 };
 
-// ── TEACHER ────────────────────────────────────────────────
+//  TEACHER 
 
 // GET /api/complaints/assigned — teacher views complaints assigned to them
 const getAssignedComplaints = async (req, res) => {
