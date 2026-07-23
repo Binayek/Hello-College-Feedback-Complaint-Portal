@@ -1,5 +1,8 @@
 Hello College — Feedback & Complaint Portal
 
+Which elective is best to choose for computer Engineering? 1) Network and System Engineering 2) Analysis of Algorithms 3) IPv6 4) Audio Engineering
+
+
 
 A complaint and feedback management system for academic institutions.
 
@@ -29,15 +32,22 @@ hello-college/
 │       ├── server.js
 │       ├── config/
 │       │   └── db.js
+│       │   └── openai.js
 │       ├── middleware/
 │       │   └── auth.js
+│       │   └── moderation.js
+│       │   └── profanityfilter.js
 │       ├── routes/
 │       │   └── index.js
+│       ├── utils/
+│       │   └── normalize.js
+│       │   └── profanityWords.js
 │       └── controllers/
 │           ├── authController.js
 │           ├── communityController.js
 │           ├── complaintController.js
 │           └── userController.js
+
 ├── frontend/
 │   ├── package.json
 │   └── src/

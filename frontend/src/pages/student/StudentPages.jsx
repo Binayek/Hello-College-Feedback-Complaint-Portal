@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ModerationError, { parseModerationError } from '../../components/shared/ModerationError';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
@@ -175,6 +176,7 @@ export function StudentComplaints() {
   const [selectedId, setSelectedId] = useState(null);
   const [form, setForm]             = useState({ title: '', description: '', category: '', priority: 'medium', is_anonymous: false });
   const [submitting, setSubmitting] = useState(false);
+  const [moderationErr, setModerationErr] = useState(null);
   const [activeTab, setActiveTab]   = useState('all');
 
   //fetches complaints data from the API
@@ -190,6 +192,7 @@ export function StudentComplaints() {
   //handles form submission for new complaints
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setModerationErr(null);
     setSubmitting(true);
     try {
       await api.post('/complaints', form);
@@ -197,8 +200,16 @@ export function StudentComplaints() {
       setForm({ title: '', description: '', category: '', priority: 'medium', is_anonymous: false });
       setShowForm(false);
       fetchComplaints();
-    } catch (err) { toast.error(err.response?.data?.error || 'Failed to submit'); }
-    finally { setSubmitting(false); }
+    } catch (err) {
+      const mod = parseModerationError(err);
+      if (mod) {
+        setModerationErr(mod);             // keep form open, show error inline
+      } else {
+        toast.error(err.response?.data?.error || 'Failed to submit');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   //defines tabs for filtering complaints
@@ -208,6 +219,14 @@ export function StudentComplaints() {
     { key: 'active',   label: 'In Progress' },
     { key: 'resolved', label: 'Resolved' },
   ];
+
+  //counts the number of complaints in each tab
+  const tabCount = (key) => {
+    if (key === 'all')      return complaints.length;
+    if (key === 'open')     return complaints.filter(c => c.status === 'open').length;
+    if (key === 'active')   return complaints.filter(c => ['assigned', 'in_progress'].includes(c.status)).length;
+    return complaints.filter(c => ['resolved', 'closed'].includes(c.status)).length;
+  };
 
   //filters complaints based on the active tab selection
   const filtered = complaints.filter(c => {
@@ -226,7 +245,7 @@ export function StudentComplaints() {
           <p className="page-subtitle">Submit and track your formal complaints to administration</p>
         </div>
         <div className="page-actions">
-          <button className="btn btn-primary" onClick={() => setShowForm(v => !v)}>
+          <button className="btn btn-primary" onClick={() => { setShowForm(v => !v); setModerationErr(null); }}>
             <Plus size={15} /> File Complaint
           </button>
         </div>
@@ -237,12 +256,18 @@ export function StudentComplaints() {
         <div className="card" style={{ marginBottom: '1.5rem' }}>
           <div className="card-header">
             <span className="card-title">New Formal Complaint</span>
-            <button className="modal-close" onClick={() => setShowForm(false)}><X size={16} /></button>
+            <button className="modal-close" onClick={() => { setShowForm(false); setModerationErr(null); }}>
+              <X size={16} />
+            </button>
           </div>
           <div className="card-body">
             <div className="alert alert-warning" style={{ marginBottom: '1rem' }}>
               ⚠️ This complaint goes directly to college administration. Choose anonymous if you prefer privacy — your identity is only revealed in serious legal cases.
             </div>
+
+            {/* Moderation error shown above fields */}
+            <ModerationError error={moderationErr} />
+            
             <form onSubmit={handleSubmit}>
               <div className="form-grid-2">
                 <div className="form-group">
@@ -266,13 +291,13 @@ export function StudentComplaints() {
               <div className="form-group">
                 <label className="form-label">Title</label>
                 <input className="form-input" value={form.title}
-                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                  onChange={e => { setForm(f => ({ ...f, title: e.target.value })); setModerationErr(null); }}
                   placeholder="Brief summary of your complaint" required />
               </div>
               <div className="form-group">
                 <label className="form-label">Description</label>
                 <textarea className="form-textarea" value={form.description}
-                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  onChange={e => { setForm(f => ({ ...f, description: e.target.value })); setModerationErr(null); }}
                   placeholder="Describe in detail: what happened, when, who was involved, what outcome you expect…"
                   style={{ minHeight: 130 }} required />
               </div>

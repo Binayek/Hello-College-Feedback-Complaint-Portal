@@ -372,51 +372,76 @@ const respondToComplaint = async (req, res) => {
   const status = validStatuses.includes(new_status) ? new_status : null;
 
   try {
-    // Verify teacher is assigned to this complaint
-    const check = await pool.query(
-      `SELECT id FROM complaint_assignments
-       WHERE complaint_id = $1 AND assigned_to = $2
-       ORDER BY created_at DESC LIMIT 1`,
-      [req.params.id, req.user.id]
-    );
-    if (!check.rows.length) return res.status(403).json({ error: 'You are not assigned to this complaint' });
+  // Verify teacher is assigned to this complaint
+  const check = await pool.query(
+    `SELECT id FROM complaint_assignments
+     WHERE complaint_id = $1 AND assigned_to = $2
+     ORDER BY created_at DESC LIMIT 1`,
+    [req.params.id, req.user.id]
+  );
 
-    await pool.query(
-      `INSERT INTO complaint_responses (complaint_id, responder_id, content, new_status)
-       VALUES ($1, $2, $3, $4)`,
-      [req.params.id, req.user.id, content, status]
-    );
+  if (!check.rows.length) {
+    return res.status(403).json({ error: 'You are not assigned to this complaint' });
+  }
 
-    if (status) {
-      await pool.query(
-        `UPDATE complaints SET status = $1,
-         resolved_at = CASE WHEN $1 = 'resolved' THEN NOW() ELSE resolved_at END,
+  // Insert response
+  await pool.query(
+    `INSERT INTO complaint_responses (complaint_id, responder_id, content, new_status)
+     VALUES ($1, $2, $3, $4)`,
+    [req.params.id, req.user.id, content, status]
+  );
+
+  // Update complaint status if needed
+  if (status === "resolved") {
+  await pool.query(
+    `UPDATE complaints
+     SET status = $1,
+         resolved_at = NOW(),
          updated_at = NOW()
-         WHERE id = $2`,
-        [status, req.params.id]
-      );
-    }
+     WHERE id = $2`,
+    [status, req.params.id]
+  );
+} else {
+  await pool.query(
+    `UPDATE complaints
+     SET status = $1,
+         updated_at = NOW()
+     WHERE id = $2`,
+    [status, req.params.id]
+  );
+}
 
-    // Notify student
+  // Notifications should not make the request fail
+  try {
     const comp = await pool.query(
-      'SELECT created_by, title FROM complaints WHERE id = $1',
+      `SELECT created_by, title
+       FROM complaints
+       WHERE id = $1`,
       [req.params.id]
     );
+
     if (comp.rows[0]?.created_by) {
       await pool.query(
         `INSERT INTO notifications (user_id, type, message, link)
          VALUES ($1, 'complaint_status_changed', $2, $3)`,
-        [comp.rows[0].created_by,
-         `A response was added to your complaint: "${comp.rows[0].title}"`,
-         `/complaints/${req.params.id}`]
+        [
+          comp.rows[0].created_by,
+          `A response was added to your complaint: "${comp.rows[0].title}"`,
+          `/complaints/${req.params.id}`
+        ]
       );
     }
-
-    res.json({ message: 'Response submitted' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to submit response' });
+  } catch (notificationErr) {
+    console.error("Notification failed:", notificationErr);
+    // Ignore notification errors
   }
+
+  res.json({ message: 'Response submitted' });
+
+} catch (err) {
+  console.error("Respond to complaint failed:", err);
+  res.status(500).json({ error: 'Failed to submit response' });
+}
 };
 
 module.exports = {

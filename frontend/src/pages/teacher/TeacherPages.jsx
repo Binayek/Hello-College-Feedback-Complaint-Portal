@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import ModerationError, { parseModerationError } from '../../components/shared/ModerationError';
 import {
   StatusBadge, PriorityBadge, AnonBadge, TimeAgo,
   EmptyState, Spinner, SectionLabel, ResponseBox
@@ -15,6 +16,7 @@ function ComplaintModal({ complaintId, onClose, onUpdate }) {
   const [loading, setLoading]   = useState(true);
   const [form, setForm]         = useState({ content: '', new_status: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [moderationErr, setModerationErr] = useState(null);
 
   //function to fetch complaint details from the API when the modal is opened
   useEffect(() => {
@@ -26,14 +28,23 @@ function ComplaintModal({ complaintId, onClose, onUpdate }) {
   //function to handle the form submission when the teacher responds to the complaint
   const handleRespond = async (e) => {
     e.preventDefault();
+    setModerationErr(null);
     setSubmitting(true);
     try {
       await api.post(`/complaints/${complaintId}/respond`, form);
       toast.success('Response submitted!');
       onUpdate();
       onClose();
-    } catch (err) { toast.error(err.response?.data?.error || 'Failed to respond'); }
-    finally { setSubmitting(false); }
+    } catch (err) {
+      const mod = parseModerationError(err);
+      if (mod) {
+        setModerationErr(mod);             // keep modal open, show error
+      } else {
+        toast.error(err.response?.data?.error || 'Failed to respond');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   //get the complaint data from the API response
@@ -94,10 +105,14 @@ function ComplaintModal({ complaintId, onClose, onUpdate }) {
               {!['resolved', 'closed'].includes(c.status) && (
                 <form onSubmit={handleRespond} style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
                   <SectionLabel>Add Response</SectionLabel>
+
+                  {/* Moderation error shown above the textarea */}
+                  <ModerationError error={moderationErr} />
+
                   <div className="form-group">
                     <textarea className="form-textarea" value={form.content}
-                      onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-                      placeholder="Write your response to the student…" style={{ minHeight: 100 }} required />
+                    onChange={e => {setForm(f => ({ ...f, content: e.target.value }));setModerationErr(null);}}
+                    placeholder="Write your response to the student…" style={{ minHeight: 100 }} required />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Update Status</label>
