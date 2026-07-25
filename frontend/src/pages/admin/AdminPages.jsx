@@ -1,6 +1,7 @@
 //import essential libraries and components
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import {
@@ -222,6 +223,7 @@ function AdminComplaintModal({ complaintId, teachers, faculties, onClose, onUpda
 export function AdminDashboard() {
 
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -262,7 +264,9 @@ export function AdminDashboard() {
             {/* By Category */}
             {stats?.byCategory?.length > 0 && (
               <div className="card">
-                <div className="card-header"><span className="card-title">By Category</span></div>
+                <div className="card-header" onClick={() => navigate(`/admin/complaints`)} style={{ cursor: 'pointer' }}>
+                  <span className="card-title">By Category</span>
+                </div>
                 <div className="card-body" style={{ padding: '0.75rem 1.5rem' }}>
                   {stats.byCategory.map(row => (
                     <div key={row.category} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--border)', fontSize: '0.875rem' }}>
@@ -275,7 +279,9 @@ export function AdminDashboard() {
 
             {/* By Status */}
             <div className="card">
-              <div className="card-header"><span className="card-title">By Status</span></div>
+              <div className="card-header" onClick={() => navigate(`/admin/complaints`)} style={{ cursor: 'pointer' }}>
+                <span className="card-title">By Status</span>
+              </div>
               <div className="card-body" style={{ padding: '0.75rem 1.5rem' }}>
                 {stats?.byStatus?.map(row => (
                   <div key={row.status} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: '1px solid var(--border)', fontSize: '0.875rem' }}>

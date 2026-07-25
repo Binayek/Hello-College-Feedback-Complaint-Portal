@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import ModerationError, { parseModerationError } from '../../components/shared/ModerationError';
 import {
   StatusBadge, PriorityBadge, AnonBadge, TimeAgo,
@@ -141,6 +142,8 @@ export function TeacherDashboard() {
   const { user } = useAuth();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading]       = useState(true);
+  const navigate = useNavigate();
+  
 
   //fetch the complaints assigned to the teacher when the component mounts
   useEffect(() => {
@@ -179,7 +182,9 @@ export function TeacherDashboard() {
       )}
 
       <div className="card">
-        <div className="card-header"><span className="card-title">Recent Assigned Complaints</span></div>
+        <div className="card-header" onClick={() => navigate(`/teacher/complaints`)} style={{ cursor: 'pointer' }}>
+          <span className="card-title">Recent Assigned Complaints</span>
+        </div>
         {loading ? <Spinner /> : complaints.slice(0, 5).length === 0 ? (
           <EmptyState icon="✅" title="No complaints assigned" description="You'll be notified when a complaint is assigned to you." />
         ) : complaints.slice(0, 5).map(c => (

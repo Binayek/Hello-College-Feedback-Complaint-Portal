@@ -59,7 +59,7 @@ export default function App() {
             <Route path="/student"             element={<StudentDashboard />} />
             <Route path="/student/community"   element={<CommunityBoard />} />
             <Route path="/student/complaints"  element={<StudentComplaints />} />
-            <Route path="/community/:id"        element={<PostDetail />} />
+            <Route path="/student/community/:id"         element={<PostDetail />} />
           </Route>
 
           {/* Teacher */}
@@ -67,7 +67,7 @@ export default function App() {
             <Route path="/teacher"             element={<TeacherDashboard />} />
             <Route path="/teacher/community"   element={<CommunityBoard />} />
             <Route path="/teacher/complaints"  element={<TeacherComplaints />} />
-            <Route path="/community/:id"        element={<PostDetail />} />
+            <Route path="/teacher/community/:id"        element={<PostDetail />} />
           </Route>
 
           {/* Admin */}
@@ -77,7 +77,7 @@ export default function App() {
             <Route path="/admin/complaints"    element={<AdminComplaints />} />
             <Route path="/admin/analytics"     element={<AdminAnalytics />} />
             <Route path="/admin/users"         element={<AdminUsers />} />
-            <Route path="/community/:id"        element={<PostDetail />} />
+            <Route path="/admin/community/:id"        element={<PostDetail />} />
           </Route>
 
           {/* Fallback */}

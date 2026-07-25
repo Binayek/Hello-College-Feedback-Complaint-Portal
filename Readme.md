@@ -16,8 +16,7 @@ This project was developed solely for academic purposes and is submitted as a mi
 | Database           | PostgreSQL                                                                         |
 | Authentication     | JSON Web Tokens (JWT)                                                              |
 | Version Control    | Git & GitHub                                                                       |
-| Content Moderation | Profanity Filter & Keyword-Based Content Moderation *(Under Progress)*             |
-| AI Integration     | AI-Powered Complaint Summarization using a Large Language Model *(Under Progress)* |
+| Content Moderation | Profanity Filter & Keyword-Based Content Moderation                                |
 
 
 Project Structure

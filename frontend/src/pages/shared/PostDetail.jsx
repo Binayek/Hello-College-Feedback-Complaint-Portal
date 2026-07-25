@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -11,6 +11,8 @@ export default function PostDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const backPath = `/${user?.role}/community`;
+
   const [post, setPost]         = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -56,14 +58,14 @@ export default function PostDetail() {
     try {
       await api.delete(`/community/${id}`);
       toast.success('Post removed');
-      navigate(-1);
+      navigate(backPath);
     } catch { toast.error('Failed to remove post'); }
   };
 
   if (loading) return (
     <div>
-      <button className="btn btn-secondary btn-sm" onClick={() => navigate(-1)} style={{ marginBottom: '1.5rem' }}>
-        <ArrowLeft size={14} /> Back
+      <button className="btn btn-secondary btn-sm" onClick={() => navigate(backPath)} style={{ marginBottom: '1.5rem' }}>
+        <ArrowLeft size={14} /> Community Board
       </button>
       <Spinner />
     </div>
@@ -71,8 +73,8 @@ export default function PostDetail() {
 
   if (!post) return (
     <div>
-      <button className="btn btn-secondary btn-sm" onClick={() => navigate(-1)} style={{ marginBottom: '1.5rem' }}>
-        <ArrowLeft size={14} /> Back
+      <button className="btn btn-secondary btn-sm" onClick={() => navigate(backPath)} style={{ marginBottom: '1.5rem' }}>
+        <ArrowLeft size={14} /> Community Board
       </button>
       <p style={{ color: 'var(--text-muted)' }}>Post not found.</p>
     </div>
@@ -84,7 +86,7 @@ export default function PostDetail() {
       {/* Back button */}
       <button
         className="btn btn-secondary btn-sm"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(backPath)}
         style={{ marginBottom: '1.5rem' }}
       >
         <ArrowLeft size={14} /> Community Board

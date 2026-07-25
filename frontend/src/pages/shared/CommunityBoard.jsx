@@ -174,7 +174,7 @@ export default function CommunityBoard() {
             <div
               key={post.id}
               className="list-row"
-              onClick={() => navigate(`/community/${post.id}`)}
+              onClick={() => navigate(`${communityBase}/${post.id}`)}
               style={{ cursor: 'pointer' }}
             >
               <div className="list-row-head">

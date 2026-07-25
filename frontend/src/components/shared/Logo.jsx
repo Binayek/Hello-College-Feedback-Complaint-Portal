@@ -8,7 +8,7 @@ export default function Logo({ width = 220, showTagline = false }) {
         {/*Name*/}
       <text x="88" y="66" style={{ fontFamily: 'Inter, sans-serif', fontSize: 32, letterSpacing: -1 }}>
          <tspan style={{ fontWeight: 700, fill: '#22f3d7' }}>Hello</tspan>
-         <tspan style={{ fontWeight: 400, fill: '#2563EB' }}> College</tspan>
+         <tspan style={{ fontWeight: 400, fill: '#cacaca' }}> College</tspan>
         </text>
 
         {/*description*/}
