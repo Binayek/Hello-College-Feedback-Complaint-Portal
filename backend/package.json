@@ -7,12 +7,14 @@
     "dev": "nodemon src/server.js"
   },
   "dependencies": {
+    "@google/genai": "^2.13.0",
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.109.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "openai": "^6.48.0",
     "pg": "^8.11.0",
     "uuid": "^9.0.0"
   },

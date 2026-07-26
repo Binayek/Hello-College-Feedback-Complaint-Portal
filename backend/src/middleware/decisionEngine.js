@@ -14,7 +14,7 @@ module.exports = (req, res, next) => {
         });
     }
 
-    // OpenAI moderation
+    // gemini moderation
     if (ai?.flagged) {
         decision = "REJECT";
         reasons.push({

@@ -4,7 +4,9 @@ const { Pool } = require('pg');
 // Create a new pool instance with the connection string and SSL configuration
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 // Handle unexpected errors on the database connection pool

@@ -1,66 +1,169 @@
-const client = require('../config/openai');
+const ai = require("../config/gemini");
 
-//
 async function moderateText(text) {
     try {
-        const response = await client.moderations.create({
-            model: 'omni-moderation-latest',
-            input: text,
-        });
-        console.log("succesfully moderated through open AI");
-        const result = response.results[0];
+
+        const prompt = `You are a content moderation system.
+
+Classify the following text.
+
+Reject ONLY if it contains:
+- harassment
+- hate speech
+- threats
+- obscene abuse
+
+If the text is reporting abuse instead of committing abuse, return SAFE.
+
+Text:
+"""
+${text}
+"""`;
+
+const response = await ai.models.generateContent({
+    model: "gemini-3.6-flash",
+    contents: prompt,
+
+    config: {
+        responseMimeType: "application/json",
+
+        responseSchema: {
+            type: "OBJECT",
+
+            properties: {
+
+                decision: {
+                    type: "STRING",
+                    enum: ["SAFE", "REJECT"]
+                },
+
+                reason: {
+                    type: "STRING"
+                },
+
+                confidence: {
+                    type: "NUMBER"
+                },
+
+                categories: {
+                    type: "OBJECT",
+
+                    properties: {
+
+                        harassment: {
+                            type: "BOOLEAN"
+                        },
+
+                        hate: {
+                            type: "BOOLEAN"
+                        },
+
+                        sexual: {
+                            type: "BOOLEAN"
+                        },
+
+                        violence: {
+                            type: "BOOLEAN"
+                        }
+
+                    },
+
+                    required: [
+                        "harassment",
+                        "hate",
+                        "sexual",
+                        "violence"
+                    ]
+                }
+
+            },
+
+            required: [
+                "decision",
+                "reason",
+                "confidence",
+                "categories"
+            ]
+        }
+    }
+});
+        console.log("Successfully moderated through Gemini");
+
+        // Gemini returns text
+        const json = response.text.trim();
+
+        const result = JSON.parse(response.text);
+
         console.log(result);
+
         return {
             success: true,
-            flagged: result.flagged,
+            flagged: result.decision === "REJECT",
+            decision: result.decision,
+            reason: result.reason,
+            confidence: result.confidence,
             categories: result.categories,
-            categoryScores: result.category_scores,
-            
         };
+
     } catch (error) {
-        console.error('OpenAI Moderation Error:', error.message);
+
+        console.error("Gemini Moderation Error:", error);
+
         return {
             success: false,
             error: error.message,
         };
+
     }
 }
 
-
 module.exports = async (req, res, next) => {
+
     try {
-        // Collect all text fields
-        const MODERATED_FIELDS = ['title', 'content', 'description', 'message'];
+        // all fields that you get from req
+        const MODERATED_FIELDS = [
+            "title",
+            "content",
+            "description",
+            "message",
+        ];
 
         const textParts = [];
-
+        // add all text in single variable. Allow a message to be moderated using single API call
         for (const field of MODERATED_FIELDS) {
             if (req.body[field]) {
                 textParts.push(req.body[field]);
             }
         }
-        
-        // Combine all text parts to moderate using single api call
-        const combinedText = textParts.join('\n\n');
 
-        // If no text exists, skip moderation
+        const combinedText = textParts.join("\n\n");
+
+        //checks if combined text is null
         if (!combinedText.trim()) {
+
             req.aiModeration = {
                 success: true,
                 flagged: false,
+                decision: "SAFE",
+                reason: "",
+                confidence: 1,
                 categories: {},
-                categoryScores: {},
             };
 
             return next();
+
         }
 
-        // Send to OpenAI
         const result = await moderateText(combinedText);
+
         req.aiModeration = result;
 
         next();
+
     } catch (error) {
+
         next(error);
+
     }
+
 };
