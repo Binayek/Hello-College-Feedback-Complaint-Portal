@@ -5,7 +5,7 @@ import axios from 'axios';
 // and sets the default content type for requests to 'application/json'. 
 // This instance is then used to make API requests throughout the application.
 //axios.get("http://localhost:5000/api/users") is made into api.get("/users") also proxy has been set in vite.config.js to avoid CORS issues.
-const api = axios.create({ baseURL: '/api', headers: { 'Content-Type': 'application/json' } });
+const api = axios.create({ baseURL: import.meta.env.VITE_API_URL, headers: { 'Content-Type': 'application/json' } });
 
 // The request interceptor is used to attach the JWT token to the Authorization header of each request if it exists in localStorage.
 api.interceptors.request.use((config) => {
