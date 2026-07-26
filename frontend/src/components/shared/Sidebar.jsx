@@ -184,7 +184,7 @@ export default function Sidebar() {
           </div>
 
           {/* Logout */}
-          <button className="logout-btn" onClick={() => { logout(); navigate('/login'); }}>
+          <button className="logout-btn" onClick={() => { logout(); navigate('/'); }}>
             <LogOut size={13} style={{ display: 'inline', marginRight: 5 }} /> Sign out
           </button>
         </div>

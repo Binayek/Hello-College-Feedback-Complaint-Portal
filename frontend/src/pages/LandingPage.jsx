@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import Logo from '../components/shared/Logo';
 
 export default function Landing() {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', minHeight: '100vh', background: 'var(--bg)' }}>
 
       {/* Nav */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2rem', borderBottom: '1px solid var(--border)' }}>
+      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '1rem' : '1.25rem 2rem', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 16 : 0, borderBottom: '1px solid var(--border)' }}>
         <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Logo showTagline={true} width={300} /> 
+          <Logo showTagline={true} width={isMobile ? 180 : 300} /> 
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
           <Link to="/login" style={{ padding: '0.45rem 1rem', border: '1px solid var(--border)', borderRadius: 6, fontSize: '0.875rem', color: 'var(--text)', textDecoration: 'none', fontWeight: 500 }}>
@@ -22,8 +23,8 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <div style={{ textAlign: 'center', padding: '5rem 2rem 3.5rem' }}>
-        <h1 style={{ fontSize: '2.75rem', fontWeight: 700, color: 'var(--text)', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '1.1rem' }}>
+      <div style={{ textAlign: 'center', padding: isMobile ? '2.5rem 1rem' : '5rem 2rem 3.5rem' }}>
+        <h1 style={{ fontSize: 'clamp(2rem, 6vw, 2.75rem)', fontWeight: 700, color: 'var(--text)', lineHeight: 1.15, letterSpacing: '-0.02em', marginBottom: '1.1rem' }}>
           Your voice,<br />heard and tracked
         </h1>
         <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', maxWidth: 480, margin: '0 auto 2.5rem', lineHeight: 1.65 }}>
@@ -40,7 +41,7 @@ export default function Landing() {
       </div>
 
       {/* Channels */}
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 2rem 3rem' }}>
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: isMobile ? '0 1rem 3rem' : '0 2rem 3rem' }}>
         <p style={{ textAlign: 'center', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
           Three ways to communicate
         </p>
@@ -60,7 +61,7 @@ export default function Landing() {
       </div>
 
       {/* Roles */}
-      <div style={{ background: '#F9FAFB', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '3rem 2rem' }}>
+      <div style={{ background: '#F9FAFB', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: isMobile ? '2rem 1rem' : '3rem 2rem' }}>
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
           <p style={{ textAlign: 'center', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
             Built for everyone on campus
@@ -87,11 +88,11 @@ export default function Landing() {
       </div>
 
       {/* Footer */}
-      <div style={{ textAlign: 'center', padding: '2.5rem 2rem' }}>
+      <div style={{ textAlign: 'center', padding: isMobile ? '2rem 1rem' : '2.5rem 2rem' }}>
         <p style={{ fontSize: '0.855rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
           Hello College · Student Feedback & Complaint Portal
         </p>
-        <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
+        <div style={{ display:'flex',gap:20,justifyContent:'center',flexDirection:isMobile?'column':'row',alignItems:'center' }}>
           <Link to="/register" style={{ fontSize: '0.875rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>Create account</Link>
           <Link to="/login"    style={{ fontSize: '0.875rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>Sign in</Link>
         </div>
