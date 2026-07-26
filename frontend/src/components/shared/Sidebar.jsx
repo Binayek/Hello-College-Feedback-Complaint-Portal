@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import { TimeAgo } from './UI';
-import { Home, BookOpen, FileText, BarChart2, Users, LogOut, Bell } from 'lucide-react';
+import { Home, BookOpen, FileText, BarChart2, Users, LogOut, Bell, X, Menu} from 'lucide-react';
 import Logo from './Logo';
 
 // Define navigation items based on user roles
@@ -85,6 +85,7 @@ export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showNotif, setShowNotif] = useState(false);
+  const [open, setOpen]           = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const navItems = navByRole[user?.role] || [];
 
@@ -102,11 +103,47 @@ export default function Sidebar() {
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
 
   return (
+    <div>
+      {/* ── Mobile top bar with hamburger ── */}
+      <div className="mobile-topbar">
+        <button className="hamburger" onClick={() => setOpen(true)} aria-label="Open menu">
+          <Menu size={22} />
+        </button>
+        <span className="mobile-topbar-title">💬 Hello College</span>
+        {/* Notification bell on topbar for mobile */}
+        <div style={{ position: 'relative' }}>
+          <button
+            className="hamburger"
+            onClick={() => setShowNotif(v => !v)}
+            aria-label="Notifications"
+            style={{ position: 'relative' }}
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span style={{
+                position: 'absolute', top: 0, right: 0,
+                width: 8, height: 8, background: 'var(--danger)',
+                borderRadius: '50%', display: 'block',
+              }} />
+            )}
+          </button>
+          {showNotif && <NotifPanel onClose={() => setShowNotif(false)} />}
+        </div>
+      </div>
+      {/* ── Overlay (mobile) ── */}
+      <div
+        className={`sidebar-overlay ${open ? 'visible' : ''}`}
+        onClick={() => setOpen(false)}
+      />
     <aside className="sidebar">
       {/* Sidebar header with logo and user role badge */}
       <div className="sidebar-header">
         <div className="sidebar-logo"><Logo width={200} /></div>
         <div className="sidebar-badge">{user?.role}</div>
+        {/* Close button — only visible on mobile */}
+          <button className="sidebar-close" onClick={() => setOpen(false)} aria-label="Close menu">
+            <X size={20} />
+          </button>
       </div>
 
       {/* Navigation links based on user role */}
@@ -156,5 +193,6 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+    ,/</div>
   );
 }
