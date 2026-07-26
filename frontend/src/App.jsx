@@ -7,7 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 //importing components and pages for the application
-import Sidebar from './components/shared/Sidebar';
+import Sidebar, {MobileTopbar} from './components/shared/Sidebar';
 import PublicRoute from "./components/shared/PublicRoute";
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -37,7 +37,10 @@ function AppLayout({ allowedRole }) {
   return (
     <div className="app-layout">
       <Sidebar />
-      <main className="main-content"><Outlet /></main>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <MobileTopbar />
+        <main className="main-content"><Outlet /></main>
+      </div>
     </div>
   );
 }

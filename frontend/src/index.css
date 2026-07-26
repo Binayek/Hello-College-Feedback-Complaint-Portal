@@ -36,13 +36,12 @@ body {
 
 /* ── Layout ─────────────────────────────────────────────── */
 .app-layout   { display: flex; min-height: 100vh; }
+.app-layout > div { margin-left: var(--sidebar-w); flex: 1; min-width: 0; display: flex; flex-direction: column; transition: margin-left 0.25s; }
 
 .main-content {
   flex: 1;
   padding: 2rem;
-  margin-left: var(--sidebar-w);
-  min-width: 0;           /* prevent flex blowout */
-  max-width: calc(100vw - var(--sidebar-w));
+  min-width: 0;
 }
 
 /* ── Sidebar ─────────────────────────────────────────────── */
@@ -350,11 +349,10 @@ body {
   .sidebar-close { display: flex; }
 
   /* Main content takes full width */
+  .app-layout > div { margin-left: 0; }
   .main-content {
-    margin-left: 0;
-    max-width: 100%;
     padding: 1rem;
-    padding-top: 0;    /* topbar handles top spacing */
+    padding-top: 0;
   }
 
   /* Show hamburger topbar */
