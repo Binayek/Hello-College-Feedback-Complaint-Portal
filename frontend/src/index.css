@@ -290,7 +290,21 @@ body {
 .auth-footer a { color: var(--primary); text-decoration: none; font-weight: 500; }
 
 /* ── Notification panel ──────────────────────────────────── */
-.notif-panel   { position: absolute; right: 0; top: calc(100% + 6px); width: 320px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); z-index: 300; overflow: hidden; max-height: 70vh; overflow-y: auto; }
+.notif-panel {
+  position: absolute;
+  left: calc(100% + 8px);   /* place to the right of the button */
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 320px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 300;
+  max-height: 70vh;
+  overflow-y: auto;
+}
 .notif-header  { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; font-weight: 600; }
 .notif-item    { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.82rem; cursor: pointer; transition: background 0.1s; }
 .notif-item:hover { background: var(--bg); }
