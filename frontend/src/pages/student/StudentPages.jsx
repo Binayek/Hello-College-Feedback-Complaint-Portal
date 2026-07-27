@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import ModerationError, { parseModerationError } from '../../components/shared/ModerationError';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -105,6 +106,7 @@ function ComplaintDetailModal({ complaintId, onClose }) {
 export function StudentDashboard() {
   //fetches user data and define state variables.
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading]       = useState(true);
 
@@ -139,7 +141,7 @@ export function StudentDashboard() {
 
       <div className="card">
         <div className="card-header">
-          <span className="card-title">Recent Complaints</span>
+          <span className="card-title" onClick={() => navigate(`/student/complaints`)} style={{ cursor: 'pointer' }}>Recent Complaints</span>
           <Link to="/student/complaints" className="btn btn-secondary btn-sm">View all</Link>
         </div>
         {loading ? <Spinner /> : complaints.slice(0, 5).length === 0 ? (
