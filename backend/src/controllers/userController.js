@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
+const audit = require('../utils/audit');
 
 // GET /api/users/teachers — all roles
 const getTeachers = async (req, res) => {
@@ -60,6 +61,14 @@ const createUser = async (req, res) => {
        RETURNING id, name, email, role, faculty_id`,
       [name, email.toLowerCase(), hash, role, faculty_id || null]
     );
+    
+    await audit({
+      action: 'user_created_by_admin',
+      performedBy: req.user.id,
+      targetUser: rows[0].id,
+      details: `Admin created ${role} account: ${email.toLowerCase()}`,
+    });
+
     res.status(201).json({ user: rows[0] });
   } catch (err) {
     console.error(err);
@@ -75,6 +84,12 @@ const toggleUserStatus = async (req, res) => {
        WHERE id = $1 RETURNING id, name, is_active`,
       [req.params.id]
     );
+    await audit({
+      action: rows[0].is_active ? 'user_activated' : 'user_deactivated',
+      performedBy: req.user.id,
+      targetUser: rows[0].id,
+      details: `${rows[0].role} ${rows[0].email} ${rows[0].is_active ? 'activated' : 'deactivated'} by admin`,
+    });
     if (!rows.length) return res.status(404).json({ error: 'User not found' });
     res.json({ user: rows[0] });
   } catch (err) {

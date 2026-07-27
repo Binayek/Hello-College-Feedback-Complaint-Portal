@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
+const audit = require('../utils/audit');
 
 // Generate JWT token for a user
 const generateToken = (userId) =>
@@ -28,6 +29,13 @@ const register = async (req, res) => {
        RETURNING id, name, email, role, faculty_id`,
       [name, email.toLowerCase(), hash, faculty_id || null]
     );
+    //logg the register user
+    await audit({
+      action: 'user_registered',
+      performedBy: rows[0].id,
+      targetUser: rows[0].id,
+      details: `New student registered: ${email.toLowerCase()}`,
+    });
     // Generate a JWT token for the newly registered user
     const token = generateToken(rows[0].id);
     res.status(201).json({ user: rows[0], token });
@@ -59,7 +67,21 @@ const login = async (req, res) => {
 
     // Compare the provided password with the stored password hash
     const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!valid) {
+      await audit({
+        action: 'login_failed',
+        targetUser: user.id,
+        details: `Wrong password for: ${email.toLowerCase()}`,
+      });
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    //log every log in performed
+    await audit({
+      action: 'user_login',
+      performedBy: user.id,
+      targetUser: user.id,
+      details: `${user.role} logged in`,
+    });
 
     // Generate a JWT token for the authenticated user and return the user data without the password hash
     const { password_hash, ...safeUser } = user;

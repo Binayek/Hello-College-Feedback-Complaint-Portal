@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const audit = require('../utils/audit');
 
 // STUDENT 
 
@@ -15,6 +16,14 @@ const submitComplaint = async (req, res) => {
        RETURNING id, title, description, category, priority, status, is_anonymous, created_at`,
       [title, description, category || null, priority || 'medium', is_anonymous || false, req.user.id]
     );
+    
+    //log complaints created
+    await audit({
+      action: 'complaint_submitted',
+      performedBy: req.user.id,
+      relatedId: rows[0].id,
+      details: `"${title}" | priority: ${priority || 'medium'} | anonymous: ${is_anonymous || false}`,
+    });
 
     // Notify all admins
     const admins = await pool.query("SELECT id FROM users WHERE role = 'admin' AND is_active = TRUE");
@@ -192,7 +201,7 @@ const assignComplaint = async (req, res) => {
         [assigned_to, `Complaint assigned to you: "${complaint.rows[0]?.title}"`, `/teacher/complaints/${req.params.id}`]
       );
     }
-
+    
     await pool.query(
       `INSERT INTO audit_logs (action, performed_by, related_id, details)
        VALUES ('assign_complaint', $1, $2, $3)`,
@@ -229,6 +238,12 @@ const updateStatus = async (req, res) => {
         [req.params.id, req.user.id, remarks, status]
       );
     }
+    await audit({
+      action: 'complaint_status_updated',
+      performedBy: req.user.id,
+      relatedId: req.params.id,
+      details: `"${title}" status: ${oldStatus} → ${status}${remarks ? ` | note: ${remarks}` : ''}`,
+    });
 
     // Notify student
     const comp = await pool.query(
@@ -435,6 +450,16 @@ const respondToComplaint = async (req, res) => {
     console.error("Notification failed:", notificationErr);
     // Ignore notification errors
   }
+  const comp = await pool.query('SELECT title, created_by FROM complaints WHERE id = $1', [req.params.id]);
+    const { title, created_by } = comp.rows[0] || {};
+
+    await audit({
+      action: 'complaint_response_added',
+      performedBy: req.user.id,
+      targetUser: created_by || null,
+      relatedId: req.params.id,
+      details: `"${title}"${status ? ` | marked as: ${status}` : ''}`,
+    });
 
   res.json({ message: 'Response submitted' });
 

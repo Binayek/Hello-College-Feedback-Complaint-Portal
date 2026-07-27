@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const audit = require('../utils/audit');
 
 // GET /api/community
 const getPosts = async (req, res) => {
@@ -78,6 +79,15 @@ const createPost = async (req, res) => {
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [req.user.id, is_anonymous || false, title, content, category || null]
     );
+    
+    //log post created
+    await audit({
+      action: 'community_post_created',
+      performedBy: req.user.id,
+      relatedId: rows[0].id,
+      details: `"${title}" | anonymous: ${is_anonymous || false}${category ? ` | category: ${category}` : ''}`,
+    });
+
     res.status(201).json({ post: rows[0] });
   } catch (err) {
     console.error(err);
@@ -102,6 +112,14 @@ const addComment = async (req, res) => {
        VALUES ($1, $2, $3, $4) RETURNING *`,
       [req.params.id, req.user.id, is_anonymous || false, content]
     );
+    
+    //log comments
+    await audit({
+      action: 'community_comment_added',
+      performedBy: req.user.id,
+      relatedId: req.params.id,
+      details: `Comment on post ${req.params.id} | anonymous: ${is_anonymous || false}`,
+    });
 
     // Notify post author (if not anonymous and not same user)
     const postAuthor = await pool.query(
