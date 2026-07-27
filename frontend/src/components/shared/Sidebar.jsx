@@ -30,6 +30,7 @@ const navByRole = {
 
 // Module-level ref so MobileTopbar can trigger sidebar open
 let _setSidebarOpen = null;
+let _getSidebarOpen = () => false;
 
 // Notification panel 
 function NotifPanel({ onClose, anchorRef }) {
@@ -105,6 +106,7 @@ export default function Sidebar() {
 
   // Expose setter to MobileTopbar
   _setSidebarOpen = setSidebarOpen;
+  _getSidebarOpen = () => sidebarOpen;
 
   const navItems = navByRole[user?.role] || [];
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
@@ -213,6 +215,15 @@ export function MobileTopbar() {
     const id = setInterval(fetch, 60000);
     return () => clearInterval(id);
   }, [user]);
+
+  const [, forceUpdate] = useState(0);
+  // Re-render when sidebar state changes so we can hide the topbar
+  useEffect(() => {
+    const id = setInterval(() => forceUpdate(n => n + 1), 50);
+    return () => clearInterval(id);
+  }, []);
+
+  if (_getSidebarOpen()) return null;
 
   return (
     <div className="mobile-topbar">

@@ -116,14 +116,15 @@ body {
 }
 .sidebar-overlay.visible { display: block; }
 
-/* Hamburger — shown only on mobile in the top bar */
+/*  shown only on mobile in the top bar */
 .mobile-topbar {
   display: none;
   position: sticky; top: 0; z-index: 100;
   background: var(--sidebar-bg);
-  padding: 0.75rem 1rem;
-  align-items: center; gap: 0.75rem;
+  padding: 0.45rem 0.875rem;
+  align-items: center; gap: 0.5rem;
   border-bottom: 1px solid rgba(255,255,255,0.07);
+  min-height: 48px;
 }
 .mobile-topbar-title { color: #fff; font-size: 0.95rem; font-weight: 600; flex: 1; }
 .hamburger {
@@ -289,7 +290,7 @@ body {
 .auth-footer a { color: var(--primary); text-decoration: none; font-weight: 500; }
 
 /* ── Notification panel ──────────────────────────────────── */
-.notif-panel   { position: absolute; right: 0; top: calc(100% + 6px); width: 320px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); z-index: 200; overflow: hidden; }
+.notif-panel   { position: absolute; right: 0; top: calc(100% + 6px); width: 320px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); z-index: 300; overflow: hidden; max-height: 70vh; overflow-y: auto; }
 .notif-header  { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; font-weight: 600; }
 .notif-item    { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.82rem; cursor: pointer; transition: background 0.1s; }
 .notif-item:hover { background: var(--bg); }
@@ -297,6 +298,12 @@ body {
 .notif-item:last-child { border-bottom: none; }
 .notif-msg     { color: var(--text); }
 .notif-time    { color: var(--text-muted); margin-top: 2px; font-size: 0.76rem; }
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
 
 /* ── Misc ────────────────────────────────────────────────── */
 .section-divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
@@ -360,11 +367,11 @@ body {
   .badge-row     { flex-wrap: wrap; }
 
   /* Notif panel full-width */
-  .notif-panel   { width: calc(100vw - 2rem); right: -1rem; }
+  .notif-panel   { position: fixed; top: 48px; left: 0.75rem; right: 0.75rem; width: auto; }
 
   /* Tables scroll horizontally */
-  .table-scroll  { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table          { min-width: 560px; }
+  .table-scroll  { overflow-x: auto; overflow-y: auto;-webkit-overflow-scrolling: touch; }
+  table          { min-width: 560px; max-width: 100%;}
 
   /* Auth page */
   .auth-card     { padding: 1.5rem 1.25rem; }

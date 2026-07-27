@@ -620,7 +620,8 @@ export function AdminUsers() {
       {/* rendering users table */}
       <div className="card">
         {loading ? <Spinner /> : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="table-scroll">
+          <table className="users-table">
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border)' }}>
                 {['Name', 'Email', 'Role', 'Faculty', 'Status', 'Action'].map(h => (
@@ -651,6 +652,7 @@ export function AdminUsers() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>
